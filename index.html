@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <title>Google Docs Plaintext Extractor</title>
+</head>
+<body>
+<p>Paste the link to the Google Doc:</p>
+<form>
+    <input type="text" id="docLink" name="docLink" style="width: 100%;">
+    <button type="submit">Submit</button>
+    <textarea id="output" name="output" rows="10" style="width: 100%;" readonly></textarea>
+</form>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const docLink = document.querySelector('#docLink').value;
+        const output = document.querySelector('#output');
+        output.value = 'Loading...';
+        
+        // fetch the page and get response as text
+        fetch(docLink)
+            .then(response => response.text())
+            .then(text => {
+                // match all groups with regex pattern /"s"\s*:\s*"((?:[^"\\]|\\.)*)"/g
+                const matchesIter = text.matchAll(/"s"\s*:\s*"((?:[^"\\]|\\.)*)"/g);
+                const matchesArr = [...matchesIter];
+
+                if (matchesArr.length > 0) {
+                    const matchedValues = matchesArr.map(match => match[1]);
+                    const parsedValues = matchedValues.map(value => JSON.parse(`"${value}"`));
+                    output.value = parsedValues.join('\n\n');
+                } else {
+                    output.value = 'No matches found. Here\'s the raw output, please manually extract the plaintext.\n\n' + text;
+                }
+            })
+            .catch(error => {
+                output.value = 'Error: ' + error;
+            });
+    });
+</script>
+<h4>Disclaimer</h4>
+<p>This tool was developed for Lifehouse Hong Kong's internal use only. Do not redistribute.</p>
+<p>Developed by Jacob Shing. Last updated at 22 Jan 2025 at 00:02:29.</p>
+<p>Should there be abnormalities, contact the developer directly.</p>
+</body>
+</html>
